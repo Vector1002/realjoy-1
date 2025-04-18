@@ -1,6 +1,6 @@
 module scraper
 
-go 1.24.2
+go 1.24.0
 
 require (
 	github.com/go-rod/rod v0.116.2 // indirect

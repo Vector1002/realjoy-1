@@ -4,6 +4,9 @@ FROM golang:1.21
 # Install Chromium for Rod
 RUN apt-get update && apt-get install -y chromium
 
+# Debug: Check if chromium is installed
+RUN which chromium && chromium --version
+
 # Set environment variables for Rod to use Chromium
 ENV CHROME_BIN=/usr/bin/chromium
 ENV ROD_BROWSER_PATH=/usr/bin/chromium

@@ -57,7 +57,7 @@ export default function PriceScraperUI() {
     setError(null);
     setData([]); // Clear table immediately when scraping starts
     try {
-      const res = await fetch("http://localhost:8080/scrape", {
+      const res = await fetch("http://your-backend-name.onrender.com/scrape", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

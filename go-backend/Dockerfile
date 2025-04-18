@@ -13,15 +13,13 @@ ENV ROD_BROWSER_PATH=/usr/bin/chromium
 
 WORKDIR /app
 
-# Copy everything to container
-COPY . .
-
 # Copy go.mod and go.sum first
 COPY go.mod go.sum ./
 
 # Download Go dependencies
 RUN go mod download
-
+# Copy everything to container
+COPY . .
 # Build the Go app
 RUN go build -o go-backend
 

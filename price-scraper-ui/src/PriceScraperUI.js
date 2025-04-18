@@ -57,7 +57,7 @@ export default function PriceScraperUI() {
     setError(null);
     setData([]); // Clear table immediately when scraping starts
     try {
-      const res = await fetch("http://realjoy-1-3.onrender.com//scrape", {
+      const res = await fetch("http://realjoy-1-3.onrender.com/scrape", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

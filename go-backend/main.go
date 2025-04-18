@@ -82,7 +82,8 @@ func scrapeHandler(w http.ResponseWriter, r *http.Request) {
 		urls = cachedURLs
 	}
 
-	l := launcher.New().Headless(true).NoSandbox(true)
+	// l := launcher.New().Headless(true).NoSandbox(true)
+	l := launcher.New().Bin("/usr/bin/chromium").Headless(true).NoSandbox(true)
 	url := l.MustLaunch()
 	browser := rod.New().ControlURL(url).MustConnect()
 	defer browser.MustClose()

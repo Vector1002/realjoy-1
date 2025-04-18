@@ -16,6 +16,9 @@ WORKDIR /app
 # Copy everything to container
 COPY . .
 
+# Copy go.mod and go.sum first
+COPY go.mod go.sum ./
+
 # Download Go dependencies
 RUN go mod download
 
@@ -27,3 +30,4 @@ EXPOSE 8080
 
 # Run the app
 CMD ["./app"]
+

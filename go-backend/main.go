@@ -152,6 +152,14 @@ func main() {
 	}
 
 	http.HandleFunc("/scrape", withCORS(scrapeHandler))
-	fmt.Println("🚀 Server started at http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	fmt.Printf("🚀 Server started at http://localhost:%s\n", port)
+	http.ListenAndServe(":"+port, nil)
+	// fmt.Println("🚀 Server started at http://localhost:8080")
+	// http.ListenAndServe(":8080", nil)
 }

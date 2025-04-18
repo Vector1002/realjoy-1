@@ -23,11 +23,11 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Build the Go app
-RUN go build -o app
+RUN go build -o go-backend
 
 # Expose port (used by Render)
 EXPOSE 8080
 
 # Run the app
-CMD ["./app"]
+CMD ["./go-backend"]
 

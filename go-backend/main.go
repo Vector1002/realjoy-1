@@ -26,7 +26,6 @@ type ScrapeResult struct {
 
 var cachedURLs []string
 
-// Read the list of URLs from a file
 func readURLs() ([]string, error) {
 	file, err := os.Open("list.txt")
 	if err != nil {
@@ -48,7 +47,6 @@ func readURLs() ([]string, error) {
 	return urls, nil
 }
 
-// CORS middleware to allow requests from your frontend
 func withCORS(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "https://realjoy-1.vercel.app")
@@ -63,7 +61,6 @@ func withCORS(handler http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-// Scrape handler to process scraping requests
 func scrapeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -84,7 +81,7 @@ func scrapeHandler(w http.ResponseWriter, r *http.Request) {
 		urls = cachedURLs
 	}
 
-	// Launch the Chromium browser using Rod
+	// l := launcher.New().Headless(true).NoSandbox(true)
 	l := launcher.New().Bin("/usr/bin/chromium").Headless(true).NoSandbox(true)
 	url := l.MustLaunch()
 	browser := rod.New().ControlURL(url).MustConnect()
@@ -92,73 +89,62 @@ func scrapeHandler(w http.ResponseWriter, r *http.Request) {
 
 	var wg sync.WaitGroup
 	resultChan := make(chan ScrapeResult, len(urls))
-	semaphore := make(chan struct{}, 6) // Limit concurrency to 6 requests
-
-	// Set up the request interceptor to block unnecessary resources
-	browser.MustSetRequestInterceptor(func(req *rod.Request) {
-		// Block unnecessary resource types such as Image, Font, Stylesheet, Script
-		if req.ResourceType == "Image" || req.ResourceType == "Font" || req.ResourceType == "Stylesheet" || req.ResourceType == "Script" {
-			req.Abort() // Abort the request if it's an image, font, stylesheet, or script
-		} else {
-			req.Continue() // Continue the request for other types
-		}
-	})
-
-	// Iterate over the URLs and scrape them concurrently
+	semaphore := make(chan struct{}, 4)
+	// priceRegex := regexp.MustCompile(`\$\d{0,3}(?:,\d{3})*(?:\.\d{2})?`)
+	//  \$\d{0,3}(?:,\d{3})*(?:\.\d{2})?
+	//  \$\d{1,3}(?:,\d{3})*(\.\d{2})?
+	//  \$\d{1,3}(,\d{3})+\.\d{2}
 	for _, baseURL := range urls {
 		baseURL := baseURL
 		wg.Add(1)
-		semaphore <- struct{}{} // Reserve a spot in the semaphore
+		semaphore <- struct{}{}
 
 		go func() {
 			defer wg.Done()
-			defer func() { <-semaphore }() // Release the spot in the semaphore
+			defer func() { <-semaphore }()
 
-			// Create the full URL with arrival and departure dates
 			fullURL := fmt.Sprintf("%s?checkin=%s&checkout=%s", baseURL, req.ArrivalDate, req.DepartureDate)
 			page := browser.MustPage(fullURL)
 			defer page.MustClose()
 
-			// Wait until the page is fully loaded
-			page.MustWaitLoad()
+			// page.MustWaitLoad()
+			// time.Sleep(5 * time.Second)
+			page.MustElement(".pdp-quote-total span")
 
-			// Find the price on the page
 			var bestPrice string
 			hels, _ := page.Elements(".pdp-quote-total span")
 			for _, el := range hels {
 				txt := strings.TrimSpace(el.MustText())
+				// if priceRegex.MatchString(txt) {
+				// 	match := priceRegex.FindString(txt)
+				// 	bestPrice = match
+				// }
 				if strings.HasPrefix(txt, "$") {
 					bestPrice = txt
 				}
 			}
 
-			// If no price is found, set it to "N/A"
 			if bestPrice == "" {
 				bestPrice = "N/A"
 			}
 
-			// Send the result back to the main goroutine
 			resultChan <- ScrapeResult{URL: fullURL, Price: bestPrice}
 		}()
 	}
 
-	// Wait for all goroutines to finish
 	wg.Wait()
 	close(resultChan)
 
-	// Collect the results and send them as JSON
 	var results []ScrapeResult
 	for r := range resultChan {
 		results = append(results, r)
 	}
 
-	// Set response content type to JSON and send the results
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(results)
 }
 
 func main() {
-	// Read URLs from list.txt
 	var err error
 	cachedURLs, err = readURLs()
 	if err != nil {
@@ -166,15 +152,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Set up HTTP server and routes
 	http.HandleFunc("/scrape", withCORS(scrapeHandler))
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080" // Default port if not set in environment
+		port = "8080"
 	}
 
-	// Start the server
 	fmt.Printf("🚀 Server started at http://localhost:%s\n", port)
 	http.ListenAndServe(":"+port, nil)
+	// fmt.Println("🚀 Server started at http://localhost:8080")
+	// http.ListenAndServe(":8080", nil)
 }

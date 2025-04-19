@@ -89,7 +89,7 @@ func scrapeHandler(w http.ResponseWriter, r *http.Request) {
 
 	var wg sync.WaitGroup
 	resultChan := make(chan ScrapeResult, len(urls))
-	semaphore := make(chan struct{}, 4)
+	semaphore := make(chan struct{}, 3)
 	// priceRegex := regexp.MustCompile(`\$\d{0,3}(?:,\d{3})*(?:\.\d{2})?`)
 	//  \$\d{0,3}(?:,\d{3})*(?:\.\d{2})?
 	//  \$\d{1,3}(?:,\d{3})*(\.\d{2})?

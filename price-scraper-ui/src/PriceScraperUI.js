@@ -55,9 +55,10 @@ export default function PriceScraperUI() {
   const handleScrape = async () => {
     setLoading(true);
     setError(null);
-    setData([]); // Clear table immediately when scraping starts
+    setData([]); // Clear table immediately when scraping starts   https://realjoy-1.onrender.com
+
     try {
-      const res = await fetch("https://realjoy-1-production.up.railway.app/scrape", {
+      const res = await fetch("https://realjoy-1.onrender.com/scrape", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

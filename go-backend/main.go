@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/launcher"
@@ -107,9 +108,9 @@ func scrapeHandler(w http.ResponseWriter, r *http.Request) {
 			page := browser.MustPage(fullURL)
 			defer page.MustClose()
 
-			// page.MustWaitLoad()
-			// time.Sleep(5 * time.Second)
-			page.MustElement(".pdp-quote-total span")
+			page.MustWaitLoad()
+			time.Sleep(5 * time.Second)
+			// page.MustElement(".pdp-quote-total span")
 
 			var bestPrice string
 			hels, _ := page.Elements(".pdp-quote-total span")

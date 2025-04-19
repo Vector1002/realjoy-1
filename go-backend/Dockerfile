@@ -1,5 +1,5 @@
 # Start from an official Go image
-FROM golang:1.21
+FROM golang:1.21.13
 
 # Install Chromium for Rod
 RUN apt-get update && apt-get install -y chromium
